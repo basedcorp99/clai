@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -101,6 +102,7 @@ def build_prompt(request: str) -> list[dict[str, str]]:
         "Convert the user's request into one robust shell command. "
         "Return JSON only, no markdown, with keys: command, explanation. "
         "The command must fit the user's OS, shell, and current directory. "
+        "The command string must be a single line with no literal newlines. "
         "Prefer safety and correctness over brevity, especially for destructive commands. "
         "Do not include comments, markdown, or multiple alternatives."
     )
@@ -242,6 +244,7 @@ def extract_command(text: str) -> tuple[str, str]:
         command = raw.splitlines()[0].strip()
         explanation = ""
 
+    command = re.sub(r"\s*\n\s*", " ", command).strip()
     if not command:
         raise RuntimeError(f"LLM did not return a command: {text!r}")
     return command, explanation
