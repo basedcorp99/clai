@@ -289,16 +289,20 @@ def extract_command(text: str) -> tuple[str, str]:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Translate natural language into a shell command and run it.")
-    parser.add_argument("request", nargs="*", help="What you want the shell command to do")
-    parser.add_argument("--dry", "-n", action="store_true", help="Only print the command; do not execute it")
+    parser.add_argument("--dry", "-n", action="store_true", help="Print the command; do not execute it")
+    parser.add_argument("--print", dest="print_command", action="store_true", help="Print the command before executing it")
     parser.add_argument("--model", help="Model to use (defaults depend on provider)")
     parser.add_argument("--provider", choices=["auto", "codex", "openai", "openrouter"], help="Provider to use (default: config provider or auto)")
     parser.add_argument("--openrouter-key", help="OpenRouter API key (or set OPENROUTER_API_KEY)")
-    parser.add_argument("--explain", action="store_true", help="Also print the model's brief explanation")
+    parser.add_argument("--explain", action="store_true", help="Print the model's brief explanation and the command before executing")
+    parser.add_argument("request", nargs=argparse.REMAINDER, help="What you want the shell command to do")
     if not argv:
         parser.print_help()
         raise SystemExit(0)
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.request and args.request[0] == "--":
+        args.request = args.request[1:]
+    return args
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -316,9 +320,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"clai: {e}", file=sys.stderr)
         return 1
 
+    should_print = args.print_command or args.dry or args.explain
     if args.explain and explanation:
         print(f"# {explanation}")
-    print(command)
+    if should_print:
+        print(command)
 
     if args.dry:
         return 0

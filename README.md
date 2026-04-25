@@ -83,8 +83,11 @@ clai --provider openrouter "list files sorted by size"
 ## Usage
 
 ```bash
-# Print and execute
+# Execute quietly by default
 clai "git command to delete branch X"
+
+# Print and execute
+clai --print "git command to delete branch X"
 
 # Only print the command
 clai --dry "git command to delete branch X"
@@ -101,4 +104,4 @@ clai --explain --dry "compress this folder into archive.tar.gz"
 
 ## Safety
 
-By default, `clai` executes exactly one command returned by the model. Use `--dry` when you want to inspect the command first.
+By default, `clai` executes exactly one command returned by the model without printing it first, which makes command substitution usable. Use `--print` to print before executing, or `--dry` to inspect without executing.
