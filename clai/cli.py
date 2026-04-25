@@ -15,11 +15,10 @@ from pathlib import Path
 from typing import Any, Optional
 
 
-# Cheapest/fastest OpenAI API default. Codex OAuth may not support this model,
-# so the Codex provider keeps using the local Codex default unless --model is set.
-DEFAULT_OPENAI_MODEL = "gpt-4.1-nano"
-DEFAULT_OPENROUTER_MODEL = "openai/gpt-4.1-nano"
-DEFAULT_CODEX_MODEL = "gpt-5.4-mini"
+DEFAULT_MODEL = "gpt-5.4-mini"
+DEFAULT_OPENAI_MODEL = DEFAULT_MODEL
+DEFAULT_OPENROUTER_MODEL = f"openai/{DEFAULT_MODEL}"
+DEFAULT_CODEX_MODEL = DEFAULT_MODEL
 DEFAULT_CODEX_REASONING_EFFORT = "none"  # "thinking off" for Codex OAuth.
 
 

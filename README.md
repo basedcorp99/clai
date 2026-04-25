@@ -65,9 +65,9 @@ clai --dry "git command to delete branch X"
 clai -n "find large files under this directory"
 
 # Choose a model
-clai --model gpt-4.1-nano "show current git branch"
+clai --model gpt-5.4-mini "show current git branch"
 clai --provider codex --model gpt-5.4-mini "show current git branch"
-clai --provider openrouter --model openai/gpt-4.1-nano "show current git branch"
+clai --provider openrouter --model openai/gpt-5.4-mini "show current git branch"
 
 # Print the model explanation before the command
 clai --explain --dry "compress this folder into archive.tar.gz"
