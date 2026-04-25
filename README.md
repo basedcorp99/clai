@@ -58,8 +58,8 @@ cp clai.example.json ~/.clai.json
 {
   "provider": "auto",
   "model": "gpt-5.4-mini",
-  "codex_model": "gpt-5.4-mini",
-  "codex_reasoning_effort": "none",
+  "codex_model": "gpt-5.3-codex-spark",
+  "codex_reasoning_effort": "low",
   "openai_model": "gpt-5.4-mini",
   "openai_api_key": "",
   "openrouter_model": "openai/gpt-5.4-mini",
@@ -92,7 +92,7 @@ clai -n "find large files under this directory"
 
 # Choose a model
 clai --model gpt-5.4-mini "show current git branch"
-clai --provider codex --model gpt-5.4-mini "show current git branch"
+clai --provider codex --model gpt-5.3-codex-spark "show current git branch"
 clai --provider openrouter --model openai/gpt-5.4-mini "show current git branch"
 
 # Print the model explanation before the command

@@ -19,8 +19,8 @@ from typing import Any, Optional
 DEFAULT_MODEL = "gpt-5.4-mini"
 DEFAULT_OPENAI_MODEL = DEFAULT_MODEL
 DEFAULT_OPENROUTER_MODEL = f"openai/{DEFAULT_MODEL}"
-DEFAULT_CODEX_MODEL = DEFAULT_MODEL
-DEFAULT_CODEX_REASONING_EFFORT = "none"  # "thinking off" for Codex OAuth.
+DEFAULT_CODEX_MODEL = "gpt-5.3-codex-spark"
+DEFAULT_CODEX_REASONING_EFFORT = "low"
 
 
 @dataclass(frozen=True)
@@ -134,11 +134,13 @@ def build_prompt(request: str) -> list[dict[str, str]]:
     system = (
         "Convert the user's request into one robust shell command. "
         "Return JSON only, no markdown, with keys: command, explanation. "
-        "The command must fit the user's OS, shell, and current directory. "
-        "The command string must be a single line with no literal newlines. "
-        "Prefer safety and correctness over brevity, especially for destructive commands. "
-        "Use machine-readable output instead of human-formatted output when possible. "
-        "For destructive commands, validate targets and exclude empty, symbolic, header, or container names. "
+        "The command must fit the user's OS, shell, and current directory, and be a single line. "
+        "The command will already run in the current directory; do not include a cd to it. "
+        "Prefer correctness over brevity. "
+        "For destructive commands over multiple targets, use canonical machine-readable sources, "
+        "filter exact leaf targets before acting, skip empty/meta/container names, quote targets, "
+        "avoid xargs, and use explicit loops/checks. "
+        "If the active/current item might be deleted, first switch to an existing kept safe item; fail only if none exists. "
         "Do not include comments, markdown, or multiple alternatives."
     )
     user = (
@@ -321,7 +323,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     if args.dry:
         return 0
 
-    return subprocess.run(command, shell=True).returncode
+    shell = os.environ.get("SHELL") or "/bin/sh"
+    return subprocess.run(command, shell=True, executable=shell).returncode
 
 
 if __name__ == "__main__":
