@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clai"
+version = "0.1.0"
+description = "Command Line Artificial Intelligence: turn natural language into shell commands."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "clai" }]
+dependencies = []
+
+[project.scripts]
+clai = "clai.cli:main"
