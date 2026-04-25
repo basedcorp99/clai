@@ -200,7 +200,7 @@ def call_llm(provider: Provider, request: str) -> LLMResult:
     headers = {"Authorization": f"Bearer {provider.token}"}
 
     if provider.name == "openrouter":
-        headers.update({"HTTP-Referer": "https://github.com/local/clai", "X-Title": "clai"})
+        headers.update({"X-Title": "clai"})
         data = http_json(provider.base_url, headers, {"model": provider.model, "messages": messages, "temperature": 0})
         return LLMResult(data["choices"][0]["message"]["content"], provider.model or DEFAULT_OPENROUTER_MODEL)
 
