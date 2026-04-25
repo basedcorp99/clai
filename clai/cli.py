@@ -277,9 +277,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"clai: {e}", file=sys.stderr)
         return 1
 
-    print(command)
     if args.explain and explanation:
         print(f"# {explanation}")
+    print(command)
 
     if args.dry:
         return 0

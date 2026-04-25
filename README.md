@@ -63,7 +63,7 @@ clai --model gpt-4.1-nano "show current git branch"
 clai --provider codex --model gpt-5.4-mini "show current git branch"
 clai --provider openrouter --model openai/gpt-4.1-nano "show current git branch"
 
-# Print the model explanation too
+# Print the model explanation before the command
 clai --explain --dry "compress this folder into archive.tar.gz"
 ```
 
