@@ -19,8 +19,8 @@ from typing import Any, Optional
 DEFAULT_MODEL = "gpt-5.4-mini"
 DEFAULT_OPENAI_MODEL = DEFAULT_MODEL
 DEFAULT_OPENROUTER_MODEL = f"openai/{DEFAULT_MODEL}"
-DEFAULT_CODEX_MODEL = "gpt-5.3-codex-spark"
-DEFAULT_CODEX_REASONING_EFFORT = "low"
+DEFAULT_CODEX_MODEL = "gpt-5.5"
+DEFAULT_CODEX_REASONING_EFFORT = "none"
 
 
 @dataclass(frozen=True)
