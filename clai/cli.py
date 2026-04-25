@@ -99,11 +99,11 @@ def build_prompt(request: str) -> list[dict[str, str]]:
     cwd = os.getcwd()
     shell = os.environ.get("SHELL", "/bin/sh")
     system = (
-        "You translate natural language into exactly one shell command. "
+        "Convert the user's request into one robust shell command. "
         "Return JSON only, no markdown, with keys: command, explanation. "
-        "The command must be suitable for the user's current OS/shell. "
-        "Do not include comments or multiple alternatives. "
-        "If the request is ambiguous, still choose the most likely safe command."
+        "The command must fit the user's OS, shell, and current directory. "
+        "Prefer safety and correctness over brevity, especially for destructive commands. "
+        "Do not include comments, markdown, or multiple alternatives."
     )
     user = (
         f"Current working directory: {cwd}\n"
