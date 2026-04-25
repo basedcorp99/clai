@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -257,27 +256,22 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--provider", choices=["auto", "codex", "openai", "openrouter"], default="auto")
     parser.add_argument("--openrouter-key", help="OpenRouter API key (or set OPENROUTER_API_KEY)")
     parser.add_argument("--explain", action="store_true", help="Also print the model's brief explanation")
-    parser.add_argument("--timing", action="store_true", help="Print provider/model and timing breakdown to stderr")
+    if not argv:
+        parser.print_help()
+        raise SystemExit(0)
     return parser.parse_args(argv)
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    started = time.perf_counter()
     args = parse_args(sys.argv[1:] if argv is None else argv)
     request = " ".join(args.request).strip()
     if not request:
-        print("Usage: clai [--dry] \"git command to delete branch X\"", file=sys.stderr)
-        return 2
+        parse_args([])
+        return 0
 
-    ai_elapsed = 0.0
-    exec_elapsed = 0.0
-    provider: Optional[Provider] = None
-    result: Optional[LLMResult] = None
     try:
         provider = resolve_provider(args)
-        ai_started = time.perf_counter()
         result = call_llm(provider, request)
-        ai_elapsed = time.perf_counter() - ai_started
         command, explanation = extract_command(result.text)
     except Exception as e:
         print(f"clai: {e}", file=sys.stderr)
@@ -287,25 +281,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     if args.explain and explanation:
         print(f"# {explanation}")
 
-    return_code = 0
-    if not args.dry:
-        exec_started = time.perf_counter()
-        return_code = subprocess.run(command, shell=True).returncode
-        exec_elapsed = time.perf_counter() - exec_started
+    if args.dry:
+        return 0
 
-    if args.timing:
-        total = time.perf_counter() - started
-        python_elapsed = max(0.0, total - ai_elapsed - exec_elapsed)
-        print(
-            f"# provider={provider.name if provider else 'unknown'} model={result.model if result else 'unknown'}",
-            file=sys.stderr,
-        )
-        print(
-            f"# timing: ai={ai_elapsed:.3f}s python={python_elapsed:.3f}s exec={exec_elapsed:.3f}s total={total:.3f}s",
-            file=sys.stderr,
-        )
-
-    return return_code
+    return subprocess.run(command, shell=True).returncode
 
 
 if __name__ == "__main__":

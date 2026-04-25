@@ -41,9 +41,6 @@ clai "git command to delete branch X"
 clai --dry "git command to delete branch X"
 clai -n "find large files under this directory"
 
-# Show provider/model and timing breakdown
-clai --dry --timing "git command to delete branch X"
-
 # Choose a model
 clai --model gpt-4.1-nano "show current git branch"
 clai --provider codex --model gpt-5.4-mini "show current git branch"
