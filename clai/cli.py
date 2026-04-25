@@ -137,6 +137,8 @@ def build_prompt(request: str) -> list[dict[str, str]]:
         "The command must fit the user's OS, shell, and current directory. "
         "The command string must be a single line with no literal newlines. "
         "Prefer safety and correctness over brevity, especially for destructive commands. "
+        "Use machine-readable output instead of human-formatted output when possible. "
+        "For destructive commands, validate targets and exclude empty, symbolic, header, or container names. "
         "Do not include comments, markdown, or multiple alternatives."
     )
     user = (
