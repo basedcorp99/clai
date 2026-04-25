@@ -1,0 +1,10 @@
+{
+  "provider": "auto",
+  "model": "gpt-5.4-mini",
+  "codex_model": "gpt-5.4-mini",
+  "codex_reasoning_effort": "none",
+  "openai_model": "gpt-5.4-mini",
+  "openai_api_key": "",
+  "openrouter_model": "openai/gpt-5.4-mini",
+  "openrouter_api_key": ""
+}

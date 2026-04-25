@@ -29,6 +29,7 @@ class Provider:
     base_url: str
     token: str
     model: Optional[str]
+    reasoning_effort: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,35 @@ def _codex_auth_path() -> Path:
     return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "auth.json"
 
 
+def _config_paths() -> list[Path]:
+    paths: list[Path] = []
+    if os.environ.get("CLAI_CONFIG"):
+        paths.append(Path(os.environ["CLAI_CONFIG"]))
+    paths.extend([
+        Path.cwd() / ".clai.json",
+        Path.home() / ".clai.json",
+        Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "clai" / "config.json",
+    ])
+    return paths
+
+
+def load_config() -> dict[str, Any]:
+    for path in _config_paths():
+        data = _load_json(path)
+        if data:
+            return data
+    return {}
+
+
+def _config_str(config: dict[str, Any], key: str) -> Optional[str]:
+    value = config.get(key)
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def _model_for(config: dict[str, Any], provider: str, fallback: str) -> str:
+    return _config_str(config, f"{provider}_model") or _config_str(config, "model") or fallback
+
+
 def _codex_token() -> Optional[str]:
     auth = _load_json(_codex_auth_path())
 
@@ -67,31 +97,34 @@ def _codex_token() -> Optional[str]:
 
 
 def resolve_provider(args: argparse.Namespace) -> Provider:
-    openrouter_key = args.openrouter_key or os.environ.get("OPENROUTER_API_KEY")
-    openai_key = os.environ.get("OPENAI_API_KEY")
+    config = load_config()
+    provider_name = args.provider or _config_str(config, "provider") or "auto"
+    openrouter_key = args.openrouter_key or os.environ.get("OPENROUTER_API_KEY") or _config_str(config, "openrouter_api_key")
+    openai_key = os.environ.get("OPENAI_API_KEY") or _config_str(config, "openai_api_key")
     codex_token = _codex_token()
+    codex_reasoning = _config_str(config, "codex_reasoning_effort") or DEFAULT_CODEX_REASONING_EFFORT
 
     # User asked for local Codex OAuth first, then OpenRouter. Codex OAuth tokens
     # do not necessarily have generic OpenAI API scopes, so use the installed
     # Codex CLI when possible; it knows how to use/refresh its local OAuth auth.
-    if not args.provider or args.provider == "auto":
+    if provider_name == "auto":
         if codex_token and shutil.which("codex"):
-            return Provider("codex", "codex", "", args.model or DEFAULT_CODEX_MODEL)
+            return Provider("codex", "codex", "", args.model or _model_for(config, "codex", DEFAULT_CODEX_MODEL), codex_reasoning)
         if openrouter_key:
-            return Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", openrouter_key, args.model or DEFAULT_OPENROUTER_MODEL)
+            return Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", openrouter_key, args.model or _model_for(config, "openrouter", DEFAULT_OPENROUTER_MODEL))
         if openai_key:
-            return Provider("openai", "https://api.openai.com/v1/responses", openai_key, args.model or DEFAULT_OPENAI_MODEL)
-    elif args.provider == "openai":
+            return Provider("openai", "https://api.openai.com/v1/responses", openai_key, args.model or _model_for(config, "openai", DEFAULT_OPENAI_MODEL))
+    elif provider_name == "openai":
         if openai_key:
-            return Provider("openai", "https://api.openai.com/v1/responses", openai_key, args.model or DEFAULT_OPENAI_MODEL)
-    elif args.provider == "codex" and codex_token and shutil.which("codex"):
-        return Provider("codex", "codex", "", args.model or DEFAULT_CODEX_MODEL)
-    elif args.provider == "openrouter" and openrouter_key:
-        return Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", openrouter_key, args.model or DEFAULT_OPENROUTER_MODEL)
+            return Provider("openai", "https://api.openai.com/v1/responses", openai_key, args.model or _model_for(config, "openai", DEFAULT_OPENAI_MODEL))
+    elif provider_name == "codex" and codex_token and shutil.which("codex"):
+        return Provider("codex", "codex", "", args.model or _model_for(config, "codex", DEFAULT_CODEX_MODEL), codex_reasoning)
+    elif provider_name == "openrouter" and openrouter_key:
+        return Provider("openrouter", "https://openrouter.ai/api/v1/chat/completions", openrouter_key, args.model or _model_for(config, "openrouter", DEFAULT_OPENROUTER_MODEL))
 
     raise SystemExit(
         "No LLM credentials found. Login with Codex so ~/.codex/auth.json exists, "
-        "or set OPENROUTER_API_KEY."
+        "or set OPENROUTER_API_KEY / OPENAI_API_KEY, or put keys in ~/.clai.json."
     )
 
 
@@ -148,7 +181,7 @@ def call_codex_cli(provider: Provider, request: str) -> LLMResult:
             "--ask-for-approval",
             "never",
             "-c",
-            f"model_reasoning_effort=\"{DEFAULT_CODEX_REASONING_EFFORT}\"",
+            f"model_reasoning_effort=\"{provider.reasoning_effort or DEFAULT_CODEX_REASONING_EFFORT}\"",
             "exec",
             "--skip-git-repo-check",
             "--ephemeral",
@@ -255,7 +288,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("request", nargs="*", help="What you want the shell command to do")
     parser.add_argument("--dry", "-n", action="store_true", help="Only print the command; do not execute it")
     parser.add_argument("--model", help="Model to use (defaults depend on provider)")
-    parser.add_argument("--provider", choices=["auto", "codex", "openai", "openrouter"], default="auto")
+    parser.add_argument("--provider", choices=["auto", "codex", "openai", "openrouter"], help="Provider to use (default: config provider or auto)")
     parser.add_argument("--openrouter-key", help="OpenRouter API key (or set OPENROUTER_API_KEY)")
     parser.add_argument("--explain", action="store_true", help="Also print the model's brief explanation")
     if not argv:

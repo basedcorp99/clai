@@ -39,13 +39,39 @@ Quick run without installing:
 python3 -m clai --dry "git command to delete branch X"
 ```
 
-## Credentials
+## Configuration and credentials
 
-`clai` uses credentials in this order:
+`clai` reads the first config file it finds:
+
+1. `$CLAI_CONFIG`
+2. `.clai.json` in the current directory
+3. `~/.clai.json`
+4. `~/.config/clai/config.json`
+
+Example:
+
+```bash
+cp clai.example.json ~/.clai.json
+```
+
+```json
+{
+  "provider": "auto",
+  "model": "gpt-5.4-mini",
+  "codex_model": "gpt-5.4-mini",
+  "codex_reasoning_effort": "none",
+  "openai_model": "gpt-5.4-mini",
+  "openai_api_key": "",
+  "openrouter_model": "openai/gpt-5.4-mini",
+  "openrouter_api_key": ""
+}
+```
+
+Credential lookup in `auto` provider mode:
 
 1. Codex local OAuth auth at `~/.codex/auth.json` (or `$CODEX_HOME/auth.json`) via the installed `codex` CLI
-2. `OPENROUTER_API_KEY`
-3. `OPENAI_API_KEY` as an extra fallback
+2. `OPENROUTER_API_KEY` or `openrouter_api_key` from config
+3. `OPENAI_API_KEY` or `openai_api_key` from config
 
 OpenRouter example:
 
