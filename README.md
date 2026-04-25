@@ -13,16 +13,24 @@ clai "git command to delete branch feature/foo"
 Recommended local install:
 
 ```bash
-python3 -m venv ~/.local/share/clai-venv
-~/.local/share/clai-venv/bin/python -m pip install -e .
-mkdir -p ~/.local/bin
-ln -sf ~/.local/share/clai-venv/bin/clai ~/.local/bin/clai
+./install.sh
 ```
 
-Then make sure `~/.local/bin` is on your `PATH`:
+The installer follows Python packaging conventions:
+
+1. If `pipx` is installed, it runs `pipx install --force --editable .`.
+2. Otherwise, it creates a virtual environment at `~/.local/share/clai-venv`, installs the package editable into that venv, and symlinks `clai` into `~/.local/bin`.
+
+Make sure `~/.local/bin` is on your `PATH`:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
+```
+
+Uninstall:
+
+```bash
+./uninstall.sh
 ```
 
 Quick run without installing:
@@ -30,8 +38,6 @@ Quick run without installing:
 ```bash
 python3 -m clai --dry "git command to delete branch X"
 ```
-
-Why not just `python -m pip install -e .`? Some systems do not have `python`, only `python3`, and many Linux distributions block direct system-wide pip installs with an “externally managed environment” error.
 
 ## Credentials
 
