@@ -320,13 +320,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"clai: {e}", file=sys.stderr)
         return 1
 
-    should_print = args.print_command or args.dry or args.explain
     if args.explain and explanation:
-        print(f"# {explanation}")
-    if should_print:
-        print(command)
-
+        print(f"# {explanation}", file=sys.stderr)
+    if args.print_command or args.explain:
+        print(f"# {command}", file=sys.stderr)
     if args.dry:
+        print(command)
         return 0
 
     shell = os.environ.get("SHELL") or "/bin/sh"
