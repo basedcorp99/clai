@@ -4,11 +4,13 @@ Command Line Artificial Intelligence: ask for a shell command in plain English, 
 
 ```bash
 clai "git command to delete branch feature/foo"
-# prints and executes something like:
+# executes something like:
 # git branch -d feature/foo
 ```
 
 ## Install
+
+Requires Go.
 
 Recommended local install:
 
@@ -16,10 +18,7 @@ Recommended local install:
 ./install.sh
 ```
 
-The installer follows Python packaging conventions:
-
-1. If `pipx` is installed, it runs `pipx install --force --editable .`.
-2. Otherwise, it creates a virtual environment at `~/.local/share/clai-venv`, installs the package editable into that venv, and symlinks `clai` into `~/.local/bin`.
+The installer builds the native Go binary and installs it to `~/.local/bin/clai`. It also removes the old Python virtualenv/pipx installation if present.
 
 Make sure `~/.local/bin` is on your `PATH`:
 
@@ -36,7 +35,7 @@ Uninstall:
 Quick run without installing:
 
 ```bash
-python3 -m clai --dry "git command to delete branch X"
+go run . --dry "git command to delete branch X"
 ```
 
 ## Configuration and credentials
@@ -86,10 +85,10 @@ clai --provider openrouter "list files sorted by size"
 # Execute quietly by default
 clai "git command to delete branch X"
 
-# Print and execute
+# Print and execute; annotation goes to stderr prefixed with '#'
 clai --print "git command to delete branch X"
 
-# Only print the command
+# Only print the command to stdout
 clai --dry "git command to delete branch X"
 clai -n "find large files under this directory"
 
